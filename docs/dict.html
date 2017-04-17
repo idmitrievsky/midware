@@ -29,9 +29,9 @@
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p>Returns the value in a nested associative structure,
-where ks is a sequence of keys. Returns None if the key
-is not present, or the default value if supplied.</p>
+      <p>Returns a value in a nested associative structure,
+where <code>ks</code> is a sequence of keys. Returns <code>None</code> if the key
+is not present, or the <code>default</code> value if supplied.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">get_in</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span></pre></div>
@@ -116,8 +116,8 @@ is not present, or the default value if supplied.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
-      <p>Associates a value in a nested associative structure, where ks is a
-sequence of keys and v is the new value and returns a nested structure.
+      <p>Associates a value in a nested associative structure, where <code>ks</code> is a
+sequence of keys and <code>v</code> is the new value and returns a nested structure.
 If any levels do not exist, dicts will be created.</p>
     </div>
     <div class='code'>
@@ -178,7 +178,7 @@ If any levels do not exist, dicts will be created.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-11'>#</a>
       </div>
-      <p>Returns a dict, that does not contain a nested mapping, where ks is a
+      <p>Returns a dict, that does not contain a nested mapping, where <code>ks</code> is a
 sequence of keys.</p>
     </div>
     <div class='code'>
@@ -212,10 +212,10 @@ sequence of keys.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-13'>#</a>
       </div>
-      <p>Updates a value in an associative structure, where k is a
-key and f is a function that will take the old value
-and any supplied args and return the new value, and returns a new
-structure.  If the key does not exist, None is passed as the old value.</p>
+      <p>Updates a value in an associative structure, where <code>k</code> is a
+key and <code>f</code> is a function that will take the old value
+and any supplied <code>args</code> and return the new value, and returns a structure.
+If the key does not exist, <code>None</code> is passed as the old value.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></pre></div>
@@ -241,10 +241,10 @@ structure.  If the key does not exist, None is passed as the old value.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-15'>#</a>
       </div>
-      <p>Updates a value in a nested associative structure, where ks is a
-sequence of keys and f is a function that will take the old value
-and any supplied args and return the new value, and returns a nested
-structure.  If any levels do not exist, dicts will be created.</p>
+      <p>Updates a value in a nested associative structure, where <code>ks</code> is a
+sequence of keys and <code>f</code> is a function that will take the old value
+and any supplied <code>args</code> and return the new value, and returns a nested
+structure. If any levels do not exist, dicts will be created.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="k">def</span> <span class="nf">update_in</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span></pre></div>

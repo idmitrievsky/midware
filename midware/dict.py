@@ -6,9 +6,9 @@ This module contains convenient clojure-style operations on dicts.
 
 def get_in(d, ks, default=None):
     """
-    Returns the value in a nested associative structure,
-    where ks is a sequence of keys. Returns None if the key
-    is not present, or the default value if supplied.
+    Returns a value in a nested associative structure,
+    where `ks` is a sequence of keys. Returns `None` if the key
+    is not present, or the `default` value if supplied.
     """
     *ks_, last = ks
     d_ = d
@@ -42,8 +42,8 @@ def assoc(d, *kvs):
 
 def assoc_in(d, ks, v):
     """
-    Associates a value in a nested associative structure, where ks is a
-    sequence of keys and v is the new value and returns a nested structure.
+    Associates a value in a nested associative structure, where `ks` is a
+    sequence of keys and `v` is the new value and returns a nested structure.
     If any levels do not exist, dicts will be created.
     """
     *ks_, last = ks
@@ -70,7 +70,7 @@ def dissoc(d, *ks):
 
 def dissoc_in(d, ks):
     """
-    Returns a dict, that does not contain a nested mapping, where ks is a
+    Returns a dict, that does not contain a nested mapping, where `ks` is a
     sequence of keys.
     """
     *ks_, last = ks
@@ -87,10 +87,10 @@ def dissoc_in(d, ks):
 
 def update(d, k, f, *args):
     """
-    Updates a value in an associative structure, where k is a
-    key and f is a function that will take the old value
-    and any supplied args and return the new value, and returns a new
-    structure.  If the key does not exist, None is passed as the old value.
+    Updates a value in an associative structure, where `k` is a
+    key and `f` is a function that will take the old value
+    and any supplied `args` and return the new value, and returns a structure.
+    If the key does not exist, `None` is passed as the old value.
     """
     v = None if k not in d else d[k]
     d[k] = f(v, *args)
@@ -99,10 +99,10 @@ def update(d, k, f, *args):
 
 def update_in(d, ks, f, *args):
     """
-    Updates a value in a nested associative structure, where ks is a
-    sequence of keys and f is a function that will take the old value
-    and any supplied args and return the new value, and returns a nested
-    structure.  If any levels do not exist, dicts will be created.
+    Updates a value in a nested associative structure, where `ks` is a
+    sequence of keys and `f` is a function that will take the old value
+    and any supplied `args` and return the new value, and returns a nested
+    structure. If any levels do not exist, dicts will be created.
     """
     new_v = f(get_in(d, ks), *args)
     assoc_in(d, ks, new_v)
