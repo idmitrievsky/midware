@@ -1,3 +1,5 @@
+.PHONY: install deps docs test
+
 install:
 	pip install .
 
