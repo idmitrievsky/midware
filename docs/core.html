@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;charset=utf-8">
+  <title>core.py</title>
+  <link rel="stylesheet" href="pycco.css">
+</head>
+<body>
+<div id='container'>
+  <div id="background"></div>
+  <div class='section'>
+    <div class='docs'><h1>core.py</h1></div>
+  </div>
+  <div class='clearall'>
+  <div class='section' id='section-0'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-0'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">import</span> <span class="nn">inspect</span>
+
+<span class="n">_verbose_mode</span> <span class="o">=</span> <span class="bp">False</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-1'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-1'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">identity</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-2'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-2'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">compose</span><span class="p">(</span><span class="o">*</span><span class="n">funcs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">funcs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">identity</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-3'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-3'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">fst</span><span class="p">,</span> <span class="o">*</span><span class="n">rest</span> <span class="o">=</span> <span class="n">funcs</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">fst</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">rest</span><span class="p">:</span>
+            <span class="n">ret</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-4'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-4'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">print_inwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="n">hidden_mw</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_verbose_mode</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">hidden_mw</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;{}---&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-5'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-5'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">print_outwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="n">hidden_mw</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_verbose_mode</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">hidden_mw</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;&lt;---{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">))</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-6'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-6'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wrapper_from_contextmanager</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">ks</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">middleware_name</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-7'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-7'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+        <span class="n">print_inwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="s1">&#39;hidden_mw&#39;</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">cm</span><span class="p">(</span><span class="n">env</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ks</span><span class="p">:</span>
+                <span class="n">assoc_in</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">handled_env</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        <span class="n">print_outwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="s1">&#39;hidden_mw&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">handled_env</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-8'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-8'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wrapper_from_generator</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="n">ks</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">middleware_name</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-9'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-9'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+        <span class="n">print_inwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;hidden_mw&#39;</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">contextmanager</span><span class="p">(</span><span class="n">g</span><span class="p">)(</span><span class="n">env</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ks</span><span class="p">:</span>
+                <span class="n">assoc_in</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">ks</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="n">handled_env</span> <span class="o">=</span> <span class="n">handler</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        <span class="n">print_outwards</span><span class="p">(</span><span class="n">middleware_name</span><span class="p">,</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="s1">&#39;hidden_mw&#39;</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">handled_env</span>
+
+    <span class="k">return</span> <span class="n">wrapper</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-10'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-10'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">_verbose</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">_verbose_mode</span>
+    <span class="n">_verbose_mode</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">yield</span>
+    <span class="n">_verbose_mode</span> <span class="o">=</span> <span class="bp">False</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-11'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-11'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">verbose_wrapper</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="n">_verbose</span><span class="o">.</span><span class="n">hidden_mw</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">return</span> <span class="n">wrapper_from_generator</span><span class="p">(</span><span class="n">_verbose</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-12'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-12'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">through</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">handler</span><span class="p">,</span> <span class="o">*</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">wrappers_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wrappers</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="n">wrappers_</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">verbose_wrapper</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">compose</span><span class="p">(</span><span class="o">*</span><span class="nb">reversed</span><span class="p">(</span><span class="n">wrappers_</span><span class="p">))(</span><span class="n">handler</span><span class="p">)(</span><span class="n">env</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">clean_through</span><span class="p">(</span><span class="n">handler</span><span class="p">,</span> <span class="o">*</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">through</span><span class="p">({},</span> <span class="n">handler</span><span class="p">,</span> <span class="o">*</span><span class="n">wrappers</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="n">verbose</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">inc</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">dec</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">-</span> <span class="mi">1</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">no_op</span><span class="p">(</span><span class="n">_</span><span class="p">):</span>
+    <span class="k">yield</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wrap_no_op</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">wrapper_from_generator</span><span class="p">(</span><span class="n">no_op</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">inc_n</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+    <span class="k">yield</span>
+    <span class="n">update_in</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">],</span> <span class="n">inc</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">wrap_inc_n</span><span class="p">(</span><span class="n">handler</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">wrapper_from_generator</span><span class="p">(</span><span class="n">inc_n</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre><span class="k">def</span> <span class="nf">req</span><span class="p">(</span><span class="n">env</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;CTR&#39;</span><span class="p">)</span>
+    <span class="n">assoc_in</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;n&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">env</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="n">clean_through</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">wrap_no_op</span><span class="p">,</span> <span class="n">wrap_inc_n</span><span class="p">))</span>
+
+</pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+</div>
+</body>
