@@ -6,55 +6,6 @@ import inspect
 _verbose_mode = False
 
 
-def get_in(d, ks):
-    *ks_, last = ks
-    d_ = d
-
-    for k in ks_:
-        if k not in d_:
-            return None
-        d_ = d_[k]
-
-    return d_.get(last)
-
-
-def assoc_in(d, ks, v):
-    *ks_, last = ks
-    d_ = d
-
-    for k in ks_:
-        if k not in d_:
-            d_[k] = {}
-        d_ = d_[k]
-
-    d_[last] = v
-    return d
-
-
-def dissoc_in(d, ks):
-    *ks_, last = ks
-    d_ = d
-
-    for k in ks_:
-        if k not in d_:
-            return d
-        d_ = d_[k]
-
-    d_.pop(last, None)
-    return d
-
-
-def update(d, k, f, *args):
-    d[k] = f(d[k], *args)
-    return d
-
-
-def update_in(d, ks, f, *args):
-    v = f(get_in(d, ks), *args)
-    assoc_in(d, ks, v)
-    return d
-
-
 def identity(x):
     return x
 
