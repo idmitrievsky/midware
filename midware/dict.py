@@ -23,7 +23,7 @@ def get_in(d, ks, default=None):
 
 def pairs(iterable):
     """
-    a, b, c, d, ... -> (a, b), (c, d), ...
+    Turns `a, b, c, d` into `(a, b), (c, d)`.
     """
     fst_iter, snd_iter = [iter(iterable)] * 2
     while True:
@@ -32,7 +32,7 @@ def pairs(iterable):
 
 def assoc(d, *kvs):
     """
-    Returns a dict, that contains the mapping of key(s) to val(s). 
+    Returns a dict, that contains the mapping of keys to vals. 
     """
     for k, v in pairs(kvs):
         d[k] = v
@@ -60,7 +60,7 @@ def assoc_in(d, ks, v):
 
 def dissoc(d, *ks):
     """
-    Returns a dict, that does not contain a mapping for key(s).
+    Returns a dict, that does not contain a mapping for keys.
     """
     for k in ks:
         d.pop(k, None)
