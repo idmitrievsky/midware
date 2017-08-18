@@ -78,7 +78,7 @@ def midware(name, ks, *args, **kwargs):
     which makes converting context manager to a wrapper really easy.
     """
 
-    def wrap_generator(g):
+    def wrap_fn(fn):
         def wrap_handler(handler):
             def wrapper(env):
                 """
@@ -86,7 +86,7 @@ def midware(name, ks, *args, **kwargs):
                 The result of entering `cm` can be saved in `env`
                 if the `ks` sequence of keys is specified.
                 """
-                _print_inwards(name, hasattr(g, 'hidden_mw'))
+                _print_inwards(name, hasattr(fn, 'hidden_mw'))
 
                 cm_factory = contextmanager(fn) if isgeneratorfunction(
                     fn) else fn
@@ -95,7 +95,7 @@ def midware(name, ks, *args, **kwargs):
                     if ks:
                         assoc_in(env, ks, v)
                     handled_env = handler(env)
-                _print_outwards(name, hasattr(g, 'hidden_mw'))
+                _print_outwards(name, hasattr(fn, 'hidden_mw'))
 
                 return handled_env
 
@@ -103,7 +103,7 @@ def midware(name, ks, *args, **kwargs):
 
         return wrap_handler
 
-    return wrap_generator
+    return wrap_fn
 
 
 def _verbose(_):
@@ -126,7 +126,7 @@ def wrap_verbose(handler):
     on the generator.
     """
     _verbose.hidden_mw = True
-    return wrapper_from_generator(_verbose, handler)
+    return midware("wrap_verbose", None)(_verbose)(handler)
 
 
 def pipe_through(env, handler, *middleware, verbose=False):
