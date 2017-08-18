@@ -10,7 +10,7 @@ with open('LICENSE') as f:
 
 setup(
     name='midware',
-    version='0.1.4',
+    version='0.2.0',
     description='A simple general-purpose middleware library for Python',
     long_description=readme,
     author='Ivan Dmitrievsky',

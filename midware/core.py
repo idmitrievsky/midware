@@ -11,6 +11,7 @@ through `after` sections.
 """
 
 from contextlib import contextmanager
+from inspect import isgeneratorfunction
 import inspect
 
 from .dict import assoc_in
@@ -68,57 +69,41 @@ def _print_outwards(middleware_name, hidden_mw=False):
         print('<---{}'.format(middleware_name))
 
 
-def wrapper_from_contextmanager(cm, handler, ks=None):
-    """
-    Context managers and middleware wrappers have similar semantics,
-    which makes converting context manager to a wrapper really easy.
-    
-    This function will be called from the body of a named middleware,
-    so capturing this name needs to be done here. The wrapper itself will
-    be called from elsewhere.
-    """
-    middleware_name = inspect.stack()[1][3]
-
-    def wrapper(env):
-        """
-        Context manager is passed `env` as its only argument.
-        The result of entering `cm` can be saved in `env`
-        if the `ks` sequence of keys is specified.
-        """
-        _print_inwards(middleware_name, hasattr(cm, 'hidden_mw'))
-        with cm(env) as v:
-            if ks:
-                assoc_in(env, ks, v)
-            handled_env = handler(env)
-        _print_outwards(middleware_name, hasattr(cm, 'hidden_mw'))
-
-        return handled_env
-
-    return wrapper
-
-
-def wrapper_from_generator(g, handler, ks=None):
+def midware(name, ks, *args, **kwargs):
     """
     Generators with one `yield` statement are similar to
     context managers.
 
-    Even though the code is the same just for `contextmanager(g)`
-    instead of `cm`, it's not possible to reuse `wrapper_from_contextmanager`
-    because `middleware_name` will be set to `wrapper_from_generator` (the caller).
+    Context managers and middleware wrappers have similar semantics,
+    which makes converting context manager to a wrapper really easy.
     """
-    middleware_name = inspect.stack()[1][3]
 
-    def wrapper(env):
-        _print_inwards(middleware_name, hasattr(g, 'hidden_mw'))
-        with contextmanager(g)(env) as v:
-            if ks:
-                assoc_in(env, ks, v)
-            handled_env = handler(env)
-        _print_outwards(middleware_name, hasattr(g, 'hidden_mw'))
+    def wrap_generator(g):
+        def wrap_handler(handler):
+            def wrapper(env):
+                """
+                Context manager is passed `env` as its only argument.
+                The result of entering `cm` can be saved in `env`
+                if the `ks` sequence of keys is specified.
+                """
+                _print_inwards(name, hasattr(g, 'hidden_mw'))
 
-        return handled_env
+                cm_factory = contextmanager(fn) if isgeneratorfunction(
+                    fn) else fn
 
-    return wrapper
+                with cm_factory(env, *args, **kwargs) as ks:
+                    if ks:
+                        assoc_in(env, ks, v)
+                    handled_env = handler(env)
+                _print_outwards(name, hasattr(g, 'hidden_mw'))
+
+                return handled_env
+
+            return wrapper
+
+        return wrap_handler
+
+    return wrap_generator
 
 
 def _verbose(_):
