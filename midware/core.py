@@ -1,25 +1,99 @@
 # -*- coding: utf-8 -*-
 """
-Midware is a general-purpose middleware library.
+Middleware can always be defined in this straightforward manner:
 
-The purpose of middleware is to wrap user-defined handlers.
-All middleware consists of two sections: `before` and `after`.
-There is a special function that controls middleware execution order.
-It threads a dictionary called `env` through the `before` sections
-then calls the handler and then threads the handler's result
-through `after` sections.
+    def wrap_smth(handler):
+        def new_handler(ctx):
+            # do smth with ctx
+            # prime it with some values
+            new_ctx = handler(ctx)
+            # do some post-processing with new_ctx
+            return new_ctx
+
+        return handler
+
+The first indentation level is not really necessary.
+Also, wrapping a handlers into a lot of middleware layers
+requires a lot of unnecessary brackets.
+
+This module provides means to work with middleware in a more convinient way.
+
+Since context is usually a nested `dict`, functions `midware.core.get_in` and
+`midware.core.assoc_in` are provided for easier manipulation of values.
+
+For no-op handlers and middleware there is `midware.core.identity`.
+
+`midware.core.compose` allows for piping functions while not using any brackets,
+but `midware.core.wrap_and_call` is suited specifically for the most
+frequent one-handler-many-layers use case.
+
+The function called `midware.core.middleware` turns generators into middleware. With
+this function the previous example turns into:
+
+    @midware.core.middleware('wrap_smth')
+    def wrap_smth(ctx):
+        # do smth with ctx
+        # prime it with some values
+        new_ctx = yield ctx
+        # do some post-processing with new_ctx
+        yield new_ctx
+
+Here `'wrap_smth'` stands for the name of the middleware and it's used when
+middleware is layered with `midware.core.wrap_and_call` and `verbose` is passed as `True`.
+If middleware is defined without the usage of generators, then the name can be set
+using `midware.core.named`. Again the following is better than the first example:
+
+    @midware.core.named('wrap_smth')
+    def wrap_smth(handler):
+        def new_handler(ctx):
+            # do smth with ctx
+            # prime it with some values
+            new_ctx = handler(ctx)
+            # do some post-processing with new_ctx
+            return new_ctx
+
+        return handler
 """
 
-from contextlib import contextmanager
-from inspect import isgeneratorfunction
-import inspect
+_VERBOSE_MODE = False
 
-from .dict import assoc_in
 
-"""
-A global flag that controls printing debug information. 
-"""
-_verbose_mode = False
+def get_in(d, ks, default=None):
+    """
+    Returns a value in a nested associative structure,
+    where `ks` is a sequence of keys. Returns `None`, if the key
+    is not present, or the `default` value, if supplied.
+    """
+    *ks_, last = ks
+    d_ = d
+
+    for k in ks_:
+        if type(d_) != dict or k not in d_:
+            return default
+        d_ = d_[k]
+
+    if type(d_) == dict:
+        return d_.get(last, default)
+
+    return default
+
+
+def assoc_in(d, ks, v):
+    """
+    Associates a value in a nested associative structure, where `ks` is a
+    sequence of keys and `v` is the new value, and returns a nested structure.
+    If any levels do not exist, `dict`s will be created.
+    """
+    *ks_, last = ks
+    d_ = d
+
+    for k in ks_:
+        if k not in d_:
+            d_[k] = {}
+        d_ = d_[k]
+
+    d_[last] = v
+    return d
 
 
 def identity(x):
@@ -51,102 +125,123 @@ def compose(*funcs):
     return wrapper
 
 
-def _print_inwards(middleware_name, hidden_mw=False):
+def _print_inwards(middleware_name):
     """
-    Print a `middleware_name` with an inwards arrow
-    if `_verbose_mode` is on and if middleware is not hidden.
+    Print a `middleware_name` with a right arrow
+    if `_VERBOSE_MODE` is on.
     """
-    if _verbose_mode and not hidden_mw:
+    if _VERBOSE_MODE:
         print('{}--->'.format(middleware_name))
 
 
-def _print_outwards(middleware_name, hidden_mw=False):
+def _print_outwards(middleware_name):
     """
-    Print a `middleware_name` with an outwards arrow
-    if `_verbose_mode` is on and if middleware is not hidden.
+    Print a `middleware_name` with a left arrow
+    if `_VERBOSE_MODE` is on.
     """
-    if _verbose_mode and not hidden_mw:
+    if _VERBOSE_MODE:
         print('<---{}'.format(middleware_name))
 
 
-def midware(name, ks, *args, **kwargs):
+def mw_from_cm(name, cm_constructor, ks=None, ctx_args={}, **kwargs):
     """
-    Generators with one `yield` statement are similar to
-    context managers.
-
-    Context managers and middleware wrappers have similar semantics,
-    which makes converting context manager to a wrapper really easy.
+    This function is not very useful, so it's advised not to use it, because
+    it can be removed at any time before 1.0.0
     """
 
-    def wrap_fn(fn):
-        def wrap_handler(handler):
-            def wrapper(env):
-                """
-                Context manager is passed `env` as its only argument.
-                The result of entering `cm` can be saved in `env`
-                if the `ks` sequence of keys is specified.
-                """
-                _print_inwards(name, hasattr(fn, 'hidden_mw'))
+    def new_middleware(handler):
+        def new_handler(ctx):
+            _print_inwards(name)
 
-                cm_factory = contextmanager(fn) if isgeneratorfunction(
-                    fn) else fn
+            ctx_kwargs = {}
+            for k, ks_ in ctx_args:
+                ctx_kwargs[k] = get_in(ctx, ks_)
 
-                with cm_factory(env, *args, **kwargs) as ks:
-                    if ks:
-                        assoc_in(env, ks, v)
-                    handled_env = handler(env)
-                _print_outwards(name, hasattr(fn, 'hidden_mw'))
+            with cm_constructor(**ctx_kwargs, **kwargs) as v:
+                if ks:
+                    assoc_in(ctx, ks, v)
+                new_ctx = handler(ctx)
 
-                return handled_env
+            _print_outwards(name)
 
-            return wrapper
+            return new_ctx
 
-        return wrap_handler
+        return new_handler
 
-    return wrap_fn
+    return new_middleware
 
 
-def _verbose(_):
+def middleware(name, *args, **kwargs):
     """
-    This wrapper doesn't change the `env` passed to it. In its
-    `before` section it turns `_verbose_mode` on and turns it off
-    in the `after` section.
+    This function is used to decorate generators with exactly two `yield` statements
+    and turn them into middleware. For examples see documentation to this module and tests.
+
+    Extra arguments beyond name are passed to the generator that is being decorated during
+    instantiation. If they are not defined during interpretation of this module, then this
+    function can be used as a regular callable and not as an annotation.
     """
-    global _verbose_mode
-    _verbose_mode = True
-    yield
-    _verbose_mode = False
+
+    def new_annotate(g_fn):
+        def new_middleware(handler):
+            def new_handler(ctx):
+                _print_inwards(name)
+
+                g = g_fn(ctx, *args, **kwargs)
+
+                changed_ctx = next(g)
+                new_ctx = handler(changed_ctx)
+                last_ctx = g.send(new_ctx)
+
+                _print_outwards(name)
+
+                return last_ctx
+
+            return new_handler
+
+        return new_middleware
+
+    return new_annotate
 
 
-def wrap_verbose(handler):
+def named(name):
     """
-    This middleware gets silently inserted into the collection
-    of user-specified middleware, so it shouldn't be visible in
-    debug output. To hide it `hidden_mw` attribute is set
-    on the generator.
+    This function is used to decorate middleware functions in order
+    for their before and after sections to show up during a verbose run.
+    For examples see documentation to this module and tests.
     """
-    _verbose.hidden_mw = True
-    return midware("wrap_verbose", None)(_verbose)(handler)
+
+    def new_annotate(mware):
+        def new_middleware(handler):
+
+            new_handler = mware(handler)
+
+            def verbose_handler(ctx):
+                _print_inwards(name)
+
+                new_ctx = new_handler(ctx)
+
+                _print_outwards(name)
+
+                return new_ctx
+
+            return verbose_handler
+
+        return new_middleware
+
+    return new_annotate
 
 
-def pipe_through(env, handler, *middleware, verbose=False):
+def wrap_and_call(ctx, handler, *middleware, verbose=False):
     """
-    This function kicks of the execution. The `env` is piped
-    through `before` sections of `middleware` left to right
-    and after the `handler` is executed the `env` is piped
-    through `after` sections right to left.
+    This function layers `middleware` left to right around
+    the `handler` and calls it all with `ctx` as an argument.
     
-    Setting `verbose` true inserts a hidden `wrap_verbose`
-    middleware to the beginning.
+    Setting `verbose` to `True` prints when handlers start their
+    before and after sections.
     """
+    global _VERBOSE_MODE
+    _VERBOSE_MODE = verbose
+
     middleware_ = list(middleware)
-    if verbose:
-        middleware_.insert(0, wrap_verbose)
-    return compose(*reversed(middleware_))(handler)(env)
 
-
-def exec_seq(handler, *middleware, verbose=False):
-    """
-    The same as `pipe_through`, but starts with an empty `env`.
-    """
-    return pipe_through({}, handler, *middleware, verbose=verbose)
+    return compose(*reversed(middleware_))(handler)(ctx)

@@ -4,10 +4,9 @@
 #
 #    pip-compile --output-file dev-requirements.txt dev-requirements.in
 #
-markdown==2.6.8           # via pycco
+mako==1.0.7               # via pdoc
+markdown==2.4.1           # via pdoc
+markupsafe==1.0           # via mako
+pdoc==0.3.2
 py==1.4.33                # via pytest
-pycco==0.5.1
-pygments==2.2.0           # via pycco
-pystache==0.5.4           # via pycco
 pytest==3.0.7
-smartypants==2.0.0        # via pycco

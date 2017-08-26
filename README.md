@@ -1,6 +1,7 @@
-# -*- coding: utf-8 -*-
-"""
-Midware is a general-purpose middleware library.
+Midware
+=======
+
+A simple general-purpose middleware library for Python 3.5 or greater.
 
 Often the main task of a program can
 be represented as one function with rather
@@ -30,4 +31,3 @@ something else before returning.
 Once again, middleware is composable, because it takes handles and returns handles.
 When using middleware as building blocks, composing those returns an outermost handle,
 which needs to be called with a `ctx` value as an argument to kick off the computation.
-"""
